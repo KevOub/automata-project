@@ -70,8 +70,8 @@ class Regex():
         self.postfix = output
 
 
-regexTest = Regex("**?a?(a+b)*?b?**")
+# regexTest = Regex("**?a?(a+b)*?b?**")
 
-regexTest.infixToPostfix()
+# regexTest.infixToPostfix()
 
-print(regexTest.infix, "\n", regexTest.postfix)
+# print(regexTest.infix, "\n", regexTest.postfix)

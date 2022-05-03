@@ -1,175 +1,139 @@
+# from os import stat
+# from nfa_class import NFA
+import json
+
+# # Represents a state with two arrows, labelled by 'label'
+# # Use 'None' for a label representing 'e' arrows
 
 
-from collections import deque
+class state:
+    label = None
+    edge = {}  # {from label : {input : [output]}}
 
 
+class State():
 
-class NFA():
+    def __init__(self, name) -> None:
+        self.name = name
+        self.epsilon = []
+        self.transitions = {}  # char -> []state
+        self.is_end = False
 
-    # THE SPECS OF OPERATION ARE FROM HERE https://github.com/rohaquinlop/automathon
-    """
-     A Class used to represent a Non-Deterministic Finite Automaton
+    # def add_transition(self,char, to):
+    #     if char in self.transitions:
+    #         self.transitions[char].append(to)
+    #     else:
+    #         self.transitions.update({char:[]})
+    #         self.transitions[char].append(to)
 
-    ...
+    # def pretty_transitions(self):
+    #     output = ""
+    #     for char,state in self.transitions.items():
+    #         output += f" initial {self.name} - {char} : {state} \n"
 
-    Attributes
-    - - - - - - - - - - - - - - - - - -
-    Q : set
-      Set of strings where each string represent the states.
-      Ex:
-        Q = {'q0', 'q1', 'q2'}
+    #     return output
+    def pretty(self,d, indent=0):
+        for key, value in d.items():
+            print('\t' * indent + str(key))
+            if isinstance(value, dict):
+                self.pretty(value, indent+1)
+            else:
+                print('\t' * (indent+1) + str(value))
 
-    sigma : set
-      Set of strings that represents the alphabet.
-      Ex:
-        sigma = {'0', '1'}
+    def __str__(self) -> str:
+        output = f"{self.name} : {self.is_end}"
+        output += "\n---\n"
+        output += f"\tT={self.pretty(self.transitions)}\n"
+        output += f"\tE={''.join([str(e) for e in self.epsilon])}"
+        return output
 
-    delta : dict
-      Dictionary that represents the transition function.
-      Ex:
-        delta = {
-                  'q0' : {
-                          '0' : {'q0', 'q2'},
-                          '1' : {'q1', 'q2', 'q3'}
-                         },
-                  'q1' : {
-                          '0' : {'q2'},
-                          '1' : {'q0', 'q1'}
-                         },
-                  'q2' : {
-                          '0' : {'q1', 'q2'},
-                          '' : {'q2'}
-                         },
-                }
-
-    initialState : str
-      String that represents the initial state from where any input is processed (initialState ∈ Q / initialState in Q).
-      Ex:
-        initialState = 'q0'
-
-    F : set
-      Set of strings that represent the final state/states of Q (F ⊆ Q).
-      Ex:
-        F = {'q0', 'q1'}
+# # An NFA is represented by it's initial and accept states
 
 
-    Methods
-    - - - - - - - - - - - - - - - - - -
-    fromRegex(r : str) -> None : Updates NFA to reflect that of a regular expression
-    accept(S : str) -> bool : Returns True if the given string S is accepted by the NFA
-    isValid() -> bool : Returns True if the NFA is a valid automata
+class nfa:
+
+    # 'self' represents current instance of the class - similar to 'this'
+    def __init__(self, initial, accept):
+        self.initial = initial
+        self.accept = accept
+        accept.is_end = True
+
+    def __str__(self) -> str:
+        # return f"{self.initial} -{self.initial.pretty_transitions()}-> {self.accept} "
+        return f"{self.initial} -> {self.accept}"
+
+    def addstate(self, state, state_set):  # add state + recursively add epsilon transitions
+        if state in state_set:
+            return
+        state_set.add(state)
+        for eps in state.epsilon:
+            self.addstate(eps, state_set)
+
+    def match(self, s):
+        current_states = set()
+        self.addstate(self.accept, current_states)
+
+        for c in s:
+            next_states = set()
+            for state in current_states:
+                if c in state.transitions.keys():
+                    trans_state = state.transitions[c]
+                    self.addstate(trans_state, next_states)
+
+            current_states = next_states
+
+        for s in current_states:
+            print(s)
+            if s.is_end:
+                return True
+        return False
 
 
-    """
+# takes postfix and compiles it
+class Compiler():
 
-    def __init__(self, Q: set, sigma: set, delta: dict, initialState: str, F: set):
-        """
-        Parameters
-        - - - - - - - - - - - - - - - - - -
+    def __init__(self) -> None:
+        self.states = 0
 
-        Q : set
-          Set of strings where each string represent the states.
+    def add_state(self) -> State:
+        self.states += 1
+        return State(f"q{self.states}")
 
-        sigma : set
-          Set of strings that represents the alphabet.
+    def concat(self, target, nfa_stack):
+        # take the two topmost NFAs
+        nf2 = nfa_stack.pop()
+        nf1 = nfa_stack.pop()
+        # make the first not end and set its final state to go to nf2
+        nf1.accept.is_end = False
+        nf1.accept.epsilon.append(nf2)
+        # merge nf1 and nf2 via removing nf1.accept & nf2.initial
+        newNFA = nfa(nf1.initial, nf2.accept)
+        nfa_stack.append(newNFA)
 
-        delta : dict
-          Dictionary that represents the transition function.
+    def char(self, target, nfa_stack):
+        # create two new states
+        s0 = self.add_state()
+        s1 = self.add_state()
+        # add a new transition based via character
+        s0.transitions[target] = s1
+        # finally, add it to the NFA stack
+        newNFA = nfa(s0, s1)
+        nfa_stack.append(newNFA)
 
-        initialState : str
-          String that represents the initial state from where any input is processed (initialState ∈ Q / initialState in Q).
+    def compile(self, msg):
+        nfa_stack = []
+        for c in msg:
+            if c == "?":
+                self.concat(c, nfa_stack)
+            else:
+                self.char(c, nfa_stack)
 
-        F : set
-          Set of strings that represent the final state/states of Q (F ⊆ Q).
-        """
-        self.Q = Q
-        self.sigma = sigma
-        self.delta = delta
-        self.initialState = initialState
-        self.F = F
+        print("\n\n\n~~~")
+        # print(nfa_stack[0].initial)
+        # print(nfa_stack[0].accept)
+        print(nfa_stack[0])
 
-    def accept(self, S: str) -> bool:
-        """ Returns True if the given string S is accepted by the NFA
+        return nfa_stack.pop()
 
-        The string S will be accepted if ∀a · a ∈ S ⇒ a ∈ sigma, which means that all the characters in S must be in sigma (must be in the alphabet).
 
-        Parameters
-        - - - - - - - - - - - - - - - - - -
-        S : str
-          A string that the NFA will try to process.
-        """
-
-        q = deque()  # queue -> states from i to last character in S | (index, state)
-        q.append([0, self.initialState])  # Starts from 0
-        ans = False  # Flag
-
-        print(f"TESTING ACCEPTANCE OF {S}")
-        print("---")
-        while q and not ans:
-            frontQ = q.popleft()  # get start state
-            idx = frontQ[0]
-            state = frontQ[1]
-            print(f"\tfrontQ = {frontQ}\tidx={idx}\t\tstate={state}")
-            print(f"q={list(q)}")
-            
-            if idx == len(S):
-                if state in self.F:
-                    ans = True
-            elif S[idx] not in self.sigma:
-                print(f"[!] S[idx] = {S[idx]} is not in {self.sigma}!")
-                return False
-            elif state in self.delta:
-                print(f"\t\t\t\tS[idx]={S[idx]}")
-                # search through states to find the gaurds
-                for transition in self.delta[state].items():
-                    d = transition[0] # the guard
-                    states = transition[1]
-                    print(f"\t\t\t\td={d}\tstates={states}\n")
-
-                    if d == "":
-                        # is epsilon
-                        for state in states:
-                            # do not consume character
-                            q.append([idx, state])
-                    elif S[idx] == d:
-                        for state in states:
-                            # Consume character
-                            q.append([idx + 1, state])
-        if S == "":
-            ans = True
-
-        print(f"\n---\nRESULT={ans}\n---")
-        return ans
-
-    def isValid(self) -> bool:
-        """ Returns True if the NFA is an valid automata """
-
-        # Validate if the initial state is in the set Q
-        if self.initialState not in self.Q:
-            # raise SigmaError(self.initialState, 'Is not declared in Q')
-            return False
-
-        # Validate if the delta transitions are in the set Q
-        for d in self.delta:
-            if d != "" and d not in self.Q:
-                # raise SigmaError(d, 'Is not declared in Q')
-                return False
-                
-            # Validate if the d transitions are valid
-            for s in self.delta[d]:
-                if s != "" and s not in self.sigma:
-                #    raise SigmaError(s, 'Is not declared in sigma')
-                    return False
-                for q in self.delta[d][s]:
-                    if q not in self.Q:
-                        #raise SigmaError(self.delta[d][s], 'Is not declared Q')
-                        return False
-
-        # Validate if the final state are in Q
-        for f in self.F:
-            if f not in self.Q:
-                # raise SigmaError(f, 'Is not declared in Q')
-                return False
-
-        # None of the above cases failed then this NFA is valid
-        return True
+""" compile() takes the postfix regex to NFA using Thompsons construct"""
