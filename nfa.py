@@ -105,7 +105,7 @@ class Compiler():
         nf1 = nfa_stack.pop()
         # make the first not end and set its final state to go to nf2
         nf1.accept.is_end = False
-        nf1.accept.epsilon.append(nf2)
+        nf1.initial.epsilon.append(nf2)
         # merge nf1 and nf2 via removing nf1.accept & nf2.initial
         newNFA = nfa(nf1.initial, nf2.accept)
         nfa_stack.append(newNFA)
