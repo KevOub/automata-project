@@ -25,9 +25,11 @@ class State():
 
     def __str__(self) -> str:
         output = f"[{self.name}]"
-        # for k, v in self.transitions.items():
-        #     for state in v:
-        #         output += f"-{k}->{state}"
+        for k, v in self.transitions.items():
+            try:
+                output += f"-{k}->{v[0]}"
+            except RecursionError:
+                output += "INF"
 
         return output
         # return f"{self.name} -{}-> {self.transitions}"
@@ -78,12 +80,13 @@ class NFA():
         current_states = set()
         # self.addstate(self.accept, current_states)
         current_states.add(self.begin)
-        print(self.begin)
+        # print(self.begin)
 
         for c in msg:
             next_states = set()
+            
             for state in current_states:
-
+                # print(state.name)
                 # then add ones that match
                 if c in state.transitions.keys():
                     # next_states = self.addstate_recursive(state,next_states)
@@ -94,20 +97,64 @@ class NFA():
                 if any([k == "" for k in state.transitions.keys()]):
                     epsilon_states = state.transitions[""]
                     trans_state = []
-                    for estate in epsilon_states:
-                        if c in estate.transitions.keys():
-                            trans_state = estate.transitions[c]
+                    finished = False
+                    # for estate in epsilon_states:
+                    #     if c in estate.transitions.keys():
+                    #         trans_state = estate.transitions[c]
 
 
+                    # for ts in trans_state:
+                    #     next_states.add(ts)
+                    # finished = False
+
+
+                    estates = set([e for e in state.transitions[""]])
+                    counter = 0
+                    while not finished:
+                        counter += 1
+                        # old_len = len(next_states)
+                        old_set = estates
+                        next_estates = set()
+                        for estate in estates:
+                            if c in estate.transitions.keys():
+                                for ts in estate.transitions[c]:
+                                    trans_state.append(ts)
+                            if any([k == "" for k in estate.transitions.keys()]):
+                                for es in estate.transitions[""]:
+                                    next_estates.add(es)
+                        
+                        estates = next_estates
+                        if estates == old_set:
+                            break
+                    
+                    # print(counter)
                     for ts in trans_state:
                         next_states.add(ts)
+                                 
+
 
             current_states = next_states
 
-        print("---")
-        for s in current_states:
-            if s.final_state:
-                return True
+        finished = False
+        next_states = current_states
+        old_set = set()
+        while not finished:
+            # print("---")
+            old_set = current_states
+            next_states = set()
+            for s in current_states:
+                # print(s.name
+                if any([k == "" for k in s.transitions.keys()]):
+                    # print("TEST")
+                    for es in s.transitions[""]:
+                        next_states.add(es)
+                if s.final_state:
+                    return True
+                
+            current_states = next_states
+            if current_states == old_set:
+                break
+
         return False
 
 
@@ -122,21 +169,27 @@ class Compiler():
         self.states += 1
         return State(f"q{self.states}")
 
-    def transition_table(self):
-        # output = self.automata.begin.name
-        output = ""
-        # states = self.compile()
-        # output = states.begin.name
-        current_states = {self.automata.begin.name :  self.automata.begin.transitions.items()}
-        for name, states in current_states:
-            output += name
+    # def transition_table(self):
+    #     # output = self.automata.begin.name
+    #     output = ""
+    #     # states = self.compile()
+    #     # output = states.begin.name
+    #     current_states = {self.automata.begin.name :  self.automata.begin.transitions.items()}
 
-        print(output)
-            
+    #     for name, states in current_states.items():
+    #         next_state = set()
+    #         output += f"{name} : "
+    #         for state in states:
+    #             transition_to = "".join([str(s) for s in state[1]])
+    #             # print(transition_to)
+    #             output += f" '{state[0]}->{transition_to}'"
+    #             for ts in state[1]:
+    #                 next_state.add(ts)
+    #         current_states = next_state
 
+    #     print(output)
 
     def compile(self, DEBUG=True) -> NFA:
-
 
         nfa_stack = []
         pc = ""
@@ -158,19 +211,41 @@ class Compiler():
                 nfa = NFA(s0, s1)
                 nfa_stack.append(nfa)
                 """
+
+            
+
                 nfa1 = nfa_stack.pop()
                 s0 = self.add_state()
                 s1 = self.add_state()
+                
                 s0.add_transition("",nfa1.begin)
                 s0.add_transition("",s1)
                 nfa1.end.add_transition("",nfa1.begin)
+                nfa1.end.add_transition("",s1)
+
+                # s1.add_transition("",nfa1.end)
+
                 nfa1.end.final_state = False
+                # s1.final_state = True
+                # nfa1.end.add_transition("",s1)
+                # nfa1.begin.add_transition("",nfa1.end)
+                
+
+                # s0.add_transition("", nfa1.begin)
+                # nfa1.begin.add_transition("", nfa1.end)
+                # nfa1.end.add_transition("", s1)
+                # nfa1.end.add_transition("", nfa1.begin)
+                
+
+                # s0.add_transition("",nfa1.begin)
+                # nfa1.end.add_transition("",nfa1.begin)
                 # nfa1.end.add_transition(pc, nfa1.end)
-                newNFA = NFA(nfa1.begin, nfa1.end)
+                # newNFA = NFA(nfa1.begin, nfa1.end)
+                newNFA = NFA(s0, s1)
                 nfa_stack.append(newNFA)
 
             # concat
-            if c == "?":
+            elif c == "?":
                 """
                 n2 = nfa_stack.pop()
                 n1 = nfa_stack.pop()
@@ -189,6 +264,30 @@ class Compiler():
                 newNFA = NFA(nfa1.begin, nfa2.end)
                 nfa_stack.append(newNFA)
 
+            # union
+            elif c == "+":
+                nfa2 = nfa_stack.pop()
+                nfa1 = nfa_stack.pop()
+                s0 = self.add_state()                
+                s1 = self.add_state()                
+                s0.add_transition("",nfa1.begin)
+                s0.add_transition("",nfa2.begin)
+                nfa2.end.add_transition("",s1)
+                nfa1.end.add_transition("",s1)
+                nfa1.end.final_state = False
+                nfa2.end.final_state = False
+                s1.final_state = True
+                nfa_stack.append(newNFA)
+
+            elif c == "\0x08":
+                s0 = self.add_state()
+                s1 = self.add_state()
+
+                s0.add_transition(c, s1)
+                # push onto stack
+                newNFA = NFA(s0, s1)
+                nfa_stack.append(newNFA)
+                
             else:
                 s0 = self.add_state()
                 s1 = self.add_state()
@@ -200,13 +299,13 @@ class Compiler():
 
             pc = c  # is the previous char
 
-
         # if DEBUG:
         #     print(len(nfa_stack))
         #     print("\nNFA GENERATED->")
-        
+
         #     print(nfa_stack[-1].begin)
-        
+
         #     print("---")
-        # assert len(nfa_stack) == 1        
+        assert len(nfa_stack) == 1
+        # print(len(nfa_stack))
         return nfa_stack[-1]
