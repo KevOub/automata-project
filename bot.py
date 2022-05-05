@@ -45,20 +45,16 @@ async def about(interaction,
 
     # Process the passed string
     if regex_match.automata.match(success):
-        embed.add_field(name="String Pass Check Success",
-                        value=f"The regex {expression} passed the test {success}", inline=False)
-        await interaction.followup.send(embed=embed)
+        embed.add_field(name="String Pass Check Success", value=f"The regex {expression} passed the test {success}", inline=False)
     else:
-        embed.add_field(name="String Pass Check Failed!",
-                        value=f"The regex {expression} passed the test {success}", inline=False)
-        await interaction.followup.send(embed=embed)
-
+        embed.add_field(name="String Pass Check Failed!", value=f"The regex {expression} passed the test {success}", inline=False)
+    
     # If there is a fail string, process it
-    if fail != None:
-        if not regex_match.automata.match(fail):
-            embed.add_field(name="String Reject Check Success",
-                            value=f"The regex {expression} passed the test of rejcting {success}", inline=False)
-            await interaction.followup.send(embed=embed)
+    if fail != None:    
+        if  not regex_match.automata.match(fail):
+            embed.add_field(name="String Reject Check Success", value=f"The regex {expression} passed the test of rejcting {success}", inline=False)
+    
+    await interaction.followup.send(embed=embed)
 
 token = ""
 
