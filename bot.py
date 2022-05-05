@@ -32,11 +32,8 @@ async def about(interaction,
 
     # Build the embed
     embed = discord.Embed(color=0xff9300)
-    embed.set_author(name=interaction.user.name,
-                     icon_url=interaction.user.display_avatar.url)
-    embed.set_thumbnail(
-        url="https://cdn.discordapp.com/attachments/887748266761007125/971808149109633094/unknown.png")
-    embed.add_field(name="String Fail Check", value="Success!", inline=True)
+    embed.set_author(name=interaction.user.name,icon_url=interaction.user.display_avatar.url)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/887748266761007125/971808149109633094/unknown.png")
 
     # Pass the regex
     regex_to_test = Regex(expression)
