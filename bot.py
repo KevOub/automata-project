@@ -60,7 +60,7 @@ token = ""
 #     print("Psst... put the discord token into the secret.key file")
 
 
-with open("secret.key","rb") as s:
+with open("bot/secret.key","rb") as s:
     token = s.read()
     print(token)
     client.run(token.decode())

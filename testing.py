@@ -1,12 +1,17 @@
-from nfa2 import Compiler 
+import unittest
+import re
+import time
+import os
+import sys
+from nfa2 import Compiler
 from regex import Regex
-import unittest, re, time
+
 
 class TestRegex(unittest.TestCase):
     def base(self, fname):
         with open(fname) as f:
             self.text = f.readlines()
-        
+
         for line in self.text:
             llist = line.split()
             f_str = None
@@ -21,9 +26,10 @@ class TestRegex(unittest.TestCase):
             if f_str:
                 self.assertEqual(nfa.automata.match(f_str), False)
             print(line, "pass")
-    
+
     def test_basic(self):
-        self.base('test_suite.dat')
+        self.base('testing/test_suite.dat')
+
 
 if __name__ == '__main__':
     unittest.main()
