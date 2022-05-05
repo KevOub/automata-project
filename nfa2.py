@@ -223,9 +223,12 @@ class Compiler():
                 nfa1.end.add_transition("",nfa1.begin)
                 nfa1.end.add_transition("",s1)
 
+                nfa1.end.final_state = False
+                newNFA = NFA(s0, s1)
+                nfa_stack.append(newNFA)
+
                 # s1.add_transition("",nfa1.end)
 
-                nfa1.end.final_state = False
                 # s1.final_state = True
                 # nfa1.end.add_transition("",s1)
                 # nfa1.begin.add_transition("",nfa1.end)
@@ -241,8 +244,6 @@ class Compiler():
                 # nfa1.end.add_transition("",nfa1.begin)
                 # nfa1.end.add_transition(pc, nfa1.end)
                 # newNFA = NFA(nfa1.begin, nfa1.end)
-                newNFA = NFA(s0, s1)
-                nfa_stack.append(newNFA)
 
             # concat
             elif c == "?":
@@ -268,16 +269,31 @@ class Compiler():
             elif c == "+":
                 nfa2 = nfa_stack.pop()
                 nfa1 = nfa_stack.pop()
-                s0 = self.add_state()                
-                s1 = self.add_state()                
+                s0 = self.add_state()           
                 s0.add_transition("",nfa1.begin)
-                s0.add_transition("",nfa2.begin)
+                s0.add_transition("",nfa2.begin)     
+                s1 = self.add_state()           
                 nfa2.end.add_transition("",s1)
                 nfa1.end.add_transition("",s1)
                 nfa1.end.final_state = False
                 nfa2.end.final_state = False
-                s1.final_state = True
+                # s1.final_state = True
+                newNFA = NFA(s0,s1)
                 nfa_stack.append(newNFA)
+                """
+                n2 = nfa_stack.pop()
+                n1 = nfa_stack.pop()
+                s0 = self.create_state()
+                s0.epsilon = [n1.start, n2.start]
+                s3 = self.create_state()
+                n1.end.epsilon.append(s3)
+                n2.end.epsilon.append(s3)
+                n1.end.is_end = False
+                n2.end.is_end = False
+                nfa = NFA(s0, s3)
+                nfa_stack.append(nfa)
+                """
+
 
             elif c == "\0x08":
                 s0 = self.add_state()

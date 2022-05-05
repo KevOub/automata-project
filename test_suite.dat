@@ -5,7 +5,15 @@
 (a?b?(a*)?b) abaaaaaab
 (f?(u*)?c?k) fuuuuuuck
 ((d*)?((i))?c) ddddddic
-
-(a?b?(a*)?b) abaaaaaabab
+(a?b?(a*)?b)    abb abaaaaaabab
 (f?(u*)?c?k) fck
-((d*)?((i))?c) ddddddiiiic
+((d*)?((i))?c)  dic ddddddiiiic
+(a+b) b
+a+b a
+((a?b)+a)   ab
+(f?(u*)?c?k) fck
+(a+b)*        aabbaabbaba
+(a)* + b?a + (b)*   aaaaaababbbbb
+(a?b)* + (b?a)* + (a)*    abababababbabababaaaaaa
+
+https://discord.com/api/oauth2/authorize?client_id=971808535207874560&permissions=8&scope=bot%20applications.commands 
