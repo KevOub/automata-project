@@ -32,8 +32,8 @@ from regex import Regex
 # automata2.accept("0000011")   #True
 # automata2.accept("000001")    #False
 
-a = Regex("a?b?b?a")
-b = Compiler(a.postfix)
+# a = Regex("a?b?b?a")
+# b = Compiler(a.postfix)
 
 # c = b.compile()
 # print(a.postfix)
@@ -41,10 +41,16 @@ b = Compiler(a.postfix)
 # print(b.automata.match("abba"))
 # compile(b)
 
-re = input("in?\t")
-ma = input("match?\t")
+# re = input("in?\t")
+# ma = input("match?\t")
+re = "a?b?c?d?e?(f)?g"
+ma = "abcdefg"
 
 regex_to_test = Regex(re)
 regex_match = Compiler(regex_to_test.postfix)
 
 print(regex_match.automata.match(ma))
+
+print("---\n---\n----")
+
+# regex_match.transition_table()

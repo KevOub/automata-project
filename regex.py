@@ -1,21 +1,23 @@
+from string import  ascii_lowercase, ascii_uppercase
 # https://github.com/kevinniland/Thompsons-Construction-on-NFAs/blob/master/thompsons.py
+
 
 class Regex():
 
-    def __init__(self, expr, lang=["a", "b"], postfix=""):
+    def __init__(self, expr, lang=[c for c in ascii_lowercase], postfix=""):
         self.expr = expr
         self.lang = lang
         self.infix = expr
         self.postfix = postfix
         self.infixToPostfix()
 
-    def peek(self,stack):
+    def peek(self, stack):
         return stack[-1] if stack else None
 
-    def calc_prec(self,a,b):
+    def calc_prec(self, a, b):
         precedence = {"*": 2, "?": 1, "+": 0}
-        return precedence[a] >= precedence[b]
-
+        if a in precedence and b in precedence:
+            return precedence[a] >= precedence[b]
 
     def infixToPostfix(self):
         """
@@ -50,15 +52,14 @@ class Regex():
                 while top is not None and top != "(":
                     output += operand_stack.pop()
                     top = self.peek(operand_stack)
-                operand_stack.pop() # ignore "("
+                operand_stack.pop()  # ignore "("
 
             else:
                 top = self.peek(operand_stack)
-                while top is not None and top not in "()" and self.calc_prec(top,c):
+                while top is not None and top not in "()" and self.calc_prec(top, c):
                     output += operand_stack.pop()
                     top = self.peek(operand_stack)
                 operand_stack.append(c)
-
 
         while self.peek(operand_stack) is not None:
             output += operand_stack.pop()
