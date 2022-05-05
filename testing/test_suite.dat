@@ -16,4 +16,3 @@ a+b a
 (a)* + b?a + (b)*   aaaaaababbbbb
 (a?b)* + (b?a)* + (a)*    abababababbabababaaaaaa
 
-https://discord.com/api/oauth2/authorize?client_id=971808535207874560&permissions=8&scope=bot%20applications.commands 
