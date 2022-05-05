@@ -16,38 +16,42 @@ class MyClient(discord.Client):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
-    async def on_message(self, message):
-        # we do not want the bot to reply to itself
-        if message.author.id == self.user.id:
-            return
-
-        if message.content.startswith('!regex'):
-            msg = "".join([c for c in message.content if c != '"'])
-            output = ""
-            # for m in message.content.split(":"):
-                # output += f"{m}\n"
-
-            try:
-                _,regex,p,f = msg.split(":")
-                    
-                regex_to_test = Regex(regex)
-                # await message.send(regex_to_test.postfix)
-
-
-                regex_match = Compiler(regex_to_test.postfix)
-                
-                if regex_match.automata.match(p):
-                    await message.reply(f"The regex {regex} passed the test {p}")                    
-                else:
-                    await message.reply(f"FAILURE!:\nThe regex {regex} passed the test {p}")
-                if f != None:    
-                    if  not regex_match.automata.match(f):
-                        await message.reply(f"The regex {regex} passed the test of rejecting {f}")                    
-            except:
-                await message.reply(f"stop that. the syntax is !regex:\"regular expression\":\"pass\":\"fail\"")
-
 
 client = MyClient()
+
+@client.slash_command(name="regex", description="Parse a regex", guild_ids=[971807147627282482])
+async def about(interaction, 
+                expression: discord.Option(str, "The expression to parse", required=True),
+                success: discord.Option(str, "The string to test to see if it passes", required=True),
+                fail: discord.Option(str, "The string to test to see if it fails", required=False)):
+    
+    # Give the bot time to respond
+    await interaction.response.defer()
+    
+    # Build the embed
+    embed=discord.Embed(color=0xff9300)
+    embed.set_author(name=interaction.user.name, icon_url=interaction.user.display_avatar.url)
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/887748266761007125/971808149109633094/unknown.png")
+    embed.add_field(name="String Fail Check", value="Success!", inline=True)
+    
+    # Pass the regex
+    regex_to_test = Regex(expression)
+    
+    regex_match = Compiler(regex_to_test.postfix)
+    
+    # Process the passed string
+    if regex_match.automata.match(success):
+        embed.add_field(name="String Pass Check Success", value=f"The regex {expression} passed the test {success}", inline=False)
+        await interaction.followup.send(embed=embed)
+    else:
+        embed.add_field(name="String Pass Check Failed!", value=f"The regex {expression} passed the test {success}", inline=False)
+        await interaction.followup.send(embed=embed)
+    
+    # If there is a fail string, process it
+    if fail != None:    
+        if  not regex_match.automata.match(fail):
+            embed.add_field(name="String Reject Check Success", value=f"The regex {expression} passed the test of rejcting {success}", inline=False)
+            await interaction.followup.send(embed=embed)
 
 token = ""
 
