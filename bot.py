@@ -1,3 +1,5 @@
+from string import ascii_letters
+import tempfile
 import discord
 from itsdangerous import exc
 import requests
@@ -6,7 +8,7 @@ import os
 from nfa2 import Compiler
 from regex import Regex
 from discord.ext import commands
-
+import random
 
 # from sympy import li
 
@@ -36,25 +38,40 @@ async def about(interaction,
                      icon_url=interaction.user.display_avatar.url)
     embed.set_thumbnail(
         url="https://cdn.discordapp.com/attachments/887748266761007125/971808149109633094/unknown.png")
-    embed.add_field(name="String Fail Check", value="Success!", inline=True)
+    # embed.add_field(name="String Fail Check", value="Success!", inline=True)
 
     # Pass the regex
     regex_to_test = Regex(expression)
 
     regex_match = Compiler(regex_to_test.postfix)
 
+    # fname = "".join([c for c in random.shuffle(ascii_letters)])
+    # temp_regex_pic = tempfile.NamedTemporaryFile(suffix='.png')
+    fname = "pics/testing"
+    path2fname = "pics/testing.gv.svg"
+    regex_match.draw_transition_table(fname)
+    
+    
+
     # Process the passed string
     if regex_match.automata.match(success):
-        embed.add_field(name="String Pass Check Success", value=f"The regex {expression} passed the test {success}", inline=False)
+        embed.add_field(name="String Pass Check Success",
+                        value=f"The regex {expression} passed the test {success}", inline=False)
     else:
-        embed.add_field(name="String Pass Check Failed!", value=f"The regex {expression} passed the test {success}", inline=False)
-    
+        embed.add_field(name="String Pass Check Failed!",
+                        value=f"The regex {expression} passed the test {success}", inline=False)
+
     # If there is a fail string, process it
-    if fail != None:    
-        if  not regex_match.automata.match(fail):
-            embed.add_field(name="String Reject Check Success", value=f"The regex {expression} passed the test of rejcting {success}", inline=False)
+    if fail != None:
+        if not regex_match.automata.match(fail):
+            embed.add_field(name="String Reject Check Success",
+                            value=f"The regex {expression} passed the test of rejcting {success}", inline=False)
+
+    file2disc = discord.File(path2fname)
+    embed.set_image(url=f"attachment://{path2fname}")
     
-    await interaction.followup.send(embed=embed)
+    await interaction.followup.send(embed=embed,file=file2disc)
+
 
 token = ""
 

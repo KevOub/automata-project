@@ -70,9 +70,3 @@ class Regex():
         print(operand_stack)
         self.postfix = output
 
-
-# regexTest = Regex("**?a?(a+b)*?b?**")
-
-# regexTest.infixToPostfix()
-
-# print(regexTest.infix, "\n", regexTest.postfix)

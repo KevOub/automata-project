@@ -1,21 +1,22 @@
 
-
 from os import stat
+from graphviz import Digraph
 
-from flask import current_app
-from itsdangerous import exc
-
+from ref.nfa import state
 
 # individual states
+
+
 class State():
 
     def __init__(self, name) -> None:
         self.name = name
         self.transitions = {}
-        self.epsilon = []
+        # self.epsilon = []
         self.final_state = False
 
     def add_transition(self, c, state):
+        # adds the transition to the array of possible transitions
         if c in self.transitions:
             self.transitions[c].append(state)
         else:
@@ -25,11 +26,13 @@ class State():
 
     def __str__(self) -> str:
         output = f"[{self.name}]"
-        for k, v in self.transitions.items():
-            try:
-                output += f"-{k}->{v[0]}"
-            except RecursionError:
-                output += "INF"
+
+        # for k, v in self.transitions.items():
+        #     for state in v:
+        #         try:
+        #             output += f"-{k}->{state}"
+        #         except RecursionError:
+        #             output += "INF"
 
         return output
         # return f"{self.name} -{}-> {self.transitions}"
@@ -43,114 +46,86 @@ class NFA():
         self.end = end
         end.final_state = True
 
-    def addstate(self, state, state_set):  # add state + recursively add epsilon transitions
-        if state in state_set:
-            return
-        state_set.add(state)
-        for eps in state.epsilon:
-            self.addstate(eps, state_set)
-
-    def next_state(self, c, current_state):
-        # if c in current_state.transitions.keys():
-        # return
-        for key in current_state.transitions.keys():
-            if key == c:
-                return current_state.transitions[key]
-            elif key == "":
-                return self.next_state(c, current_state.transitions[""])
-        return None
-
-    def addstate(self, state, state_set):  # add state + recursively add epsilon transitions
-        if state in state_set:
-            return
-        state_set.add(state)
-        for eps in state.epsilon:
-            self.addstate(eps, state_set)
-
-    def add_epsilon(self, state, state_set, c):
-        if state in state_set:
-            return state_set
-        state_set.add(state)
-        if any(["" == k for k in state.transitions.keys()]):
-            for estate in state.transitions[""]:
-                if c in estate.transitions.keys():
-                    self.add_epsilon(estate, state_set, c)
-
     def match(self, msg):
         current_states = set()
-        # self.addstate(self.accept, current_states)
+        # add the head of the NFA
         current_states.add(self.begin)
-        # print(self.begin)
+        print(self.begin)
 
+        # go through each character in message
         for c in msg:
+            # blank out the next_states sets
             next_states = set()
-            
+
+            # iterate through all the states
             for state in current_states:
-                # print(state.name)
+
                 # then add ones that match
                 if c in state.transitions.keys():
                     # next_states = self.addstate_recursive(state,next_states)
+
+                    # all transitions that include the character `c`
                     trans_state = state.transitions[c]
                     for ts in trans_state:
                         next_states.add(ts)
 
+                # handle epsilon transitions
                 if any([k == "" for k in state.transitions.keys()]):
-                    epsilon_states = state.transitions[""]
+                    # epsilon_states = state.transitions[""]
+
                     trans_state = []
                     finished = False
-                    # for estate in epsilon_states:
-                    #     if c in estate.transitions.keys():
-                    #         trans_state = estate.transitions[c]
 
-
-                    # for ts in trans_state:
-                    #     next_states.add(ts)
-                    # finished = False
-
-
+                    # TODO check if this is redundant
                     estates = set([e for e in state.transitions[""]])
                     counter = 0
                     while not finished:
                         counter += 1
-                        # old_len = len(next_states)
+                        # capture what the epsilon states were previously
                         old_set = estates
                         next_estates = set()
+
+                        # go through all lambda transitions
                         for estate in estates:
+                            # if the character we want add it to the transition table
                             if c in estate.transitions.keys():
                                 for ts in estate.transitions[c]:
                                     trans_state.append(ts)
+                            # otherwise add to the estate list for next iteration
                             if any([k == "" for k in estate.transitions.keys()]):
                                 for es in estate.transitions[""]:
                                     next_estates.add(es)
-                        
+
+                        # check if the sets have changed
                         estates = next_estates
                         if estates == old_set:
                             break
-                    
-                    # print(counter)
+
+                    # add the states found from the lambda transitions to next state
                     for ts in trans_state:
                         next_states.add(ts)
-                                 
-
 
             current_states = next_states
 
         finished = False
         next_states = current_states
         old_set = set()
+        # we once again traverse the  transition from the current state to determine
+        # whether there are lambda transitions leading us to the final state
         while not finished:
-            # print("---")
             old_set = current_states
             next_states = set()
             for s in current_states:
-                # print(s.name
+                # add lambda transitions
                 if any([k == "" for k in s.transitions.keys()]):
-                    # print("TEST")
+                    # go through the lambda transitions
                     for es in s.transitions[""]:
+                        # and add it to the next up
                         next_states.add(es)
+                # or check if s is a final state and return
                 if s.final_state:
                     return True
-                
+
             current_states = next_states
             if current_states == old_set:
                 break
@@ -163,11 +138,19 @@ class Compiler():
     def __init__(self, regex):
         self.regex = regex
         self.states = 1
+        self.language = [""]
+        self.state_table = {}
+        self.final_states = []
+        self.delta = {}  # transition table
         self.automata = self.compile()
 
     def add_state(self) -> State:
         self.states += 1
-        return State(f"q{self.states}")
+        newName = f"q{self.states}"
+        newState = State(newName)
+        self.state_table.update({newName: newState})
+
+        return newState
 
     # def transition_table(self):
     #     # output = self.automata.begin.name
@@ -189,10 +172,66 @@ class Compiler():
 
     #     print(output)
 
+    def transition_table(self):
+        # HEADER
+        header = "\t| " + "".join([f"{c}\t| " for c in self.language])
+        header_sep = "-"*len(header)*3
+        row = ""
+        # go through the list of states
+        for k, v in self.state_table.items():
+            is_final = "+" if v.final_state else ""
+            row += f"{is_final}{k}\t|"
+            # go through each character in language
+            for c in self.language:
+                # if there exists `c` in the transition table of the state
+                if c in v.transitions:
+                    # add it to the table
+                    resultant = "".join(
+                        [f"+{t.name}," if t.final_state else f"{t.name}," for t in v.transitions[c]])
+                    row += f"{resultant}\t| "
+                else:
+                    row += "\t| "
+            row += "\n"
+        print(f"{header}\n{header_sep}\n{row}")
+
+    def draw_transition_table(self, fileName):
+        # HEADER
+        # header = "\t| " + "".join([f"{c}\t| " for c in self.language])
+        # header_sep = "-"*len(header)*3
+        # row = ""
+        # go through the list of states
+        dot = Digraph(name=fileName, format='svg')
+        dot.graph_attr['rankdir'] = 'LR'
+        # dot.node("", "", shape='plaintext')
+        # dot.attr = 
+
+        # first draw each state
+        for k, v in self.state_table.items():
+            # print(type(k) == str)
+            if v.final_state:
+                dot.node(k, k, shape='doublecircle')
+            else:
+                dot.node(k, k, shape='circle')
+
+        # then draw all edges
+        for k, v in self.state_table.items():
+            # row += f"{k}\t|"
+            # go through each character in language
+            for c in self.language:
+                # if there exists `c` in the transition table of the state
+                if c in v.transitions:
+                    # goto next state from current state `k`
+                    for ns in v.transitions[c]:
+                        if c == "":
+                            dot.edge(k, ns.name, label="ε")
+                        else:
+                            dot.edge(k, ns.name, label=c)
+
+        dot.render()
+
     def compile(self, DEBUG=True) -> NFA:
 
         nfa_stack = []
-        pc = ""
 
         # go through character by character
         for c in self.regex:
@@ -212,38 +251,18 @@ class Compiler():
                 nfa_stack.append(nfa)
                 """
 
-            
-
                 nfa1 = nfa_stack.pop()
                 s0 = self.add_state()
                 s1 = self.add_state()
-                
-                s0.add_transition("",nfa1.begin)
-                s0.add_transition("",s1)
-                nfa1.end.add_transition("",nfa1.begin)
-                nfa1.end.add_transition("",s1)
+
+                s0.add_transition("", nfa1.begin)
+                s0.add_transition("", s1)
+                nfa1.end.add_transition("", nfa1.begin)
+                nfa1.end.add_transition("", s1)
 
                 nfa1.end.final_state = False
                 newNFA = NFA(s0, s1)
                 nfa_stack.append(newNFA)
-
-                # s1.add_transition("",nfa1.end)
-
-                # s1.final_state = True
-                # nfa1.end.add_transition("",s1)
-                # nfa1.begin.add_transition("",nfa1.end)
-                
-
-                # s0.add_transition("", nfa1.begin)
-                # nfa1.begin.add_transition("", nfa1.end)
-                # nfa1.end.add_transition("", s1)
-                # nfa1.end.add_transition("", nfa1.begin)
-                
-
-                # s0.add_transition("",nfa1.begin)
-                # nfa1.end.add_transition("",nfa1.begin)
-                # nfa1.end.add_transition(pc, nfa1.end)
-                # newNFA = NFA(nfa1.begin, nfa1.end)
 
             # concat
             elif c == "?":
@@ -267,19 +286,6 @@ class Compiler():
 
             # union
             elif c == "+":
-                nfa2 = nfa_stack.pop()
-                nfa1 = nfa_stack.pop()
-                s0 = self.add_state()           
-                s0.add_transition("",nfa1.begin)
-                s0.add_transition("",nfa2.begin)     
-                s1 = self.add_state()           
-                nfa2.end.add_transition("",s1)
-                nfa1.end.add_transition("",s1)
-                nfa1.end.final_state = False
-                nfa2.end.final_state = False
-                # s1.final_state = True
-                newNFA = NFA(s0,s1)
-                nfa_stack.append(newNFA)
                 """
                 n2 = nfa_stack.pop()
                 n1 = nfa_stack.pop()
@@ -294,17 +300,35 @@ class Compiler():
                 nfa_stack.append(nfa)
                 """
 
-
-            elif c == "\0x08":
+                nfa2 = nfa_stack.pop()
+                nfa1 = nfa_stack.pop()
                 s0 = self.add_state()
+                s0.add_transition("", nfa1.begin)
+                s0.add_transition("", nfa2.begin)
                 s1 = self.add_state()
-
-                s0.add_transition(c, s1)
-                # push onto stack
+                nfa2.end.add_transition("", s1)
+                nfa1.end.add_transition("", s1)
+                nfa1.end.final_state = False
+                nfa2.end.final_state = False
+                # s1.final_state = True
                 newNFA = NFA(s0, s1)
                 nfa_stack.append(newNFA)
-                
+
+            # elif c == "\0x08":
+            #     s0 = self.add_state()
+            #     s1 = self.add_state()
+
+            #     s0.add_transition(c, s1)
+            #     # push onto stack
+            #     newNFA = NFA(s0, s1)
+            #     nfa_stack.append(newNFA)
+
             else:
+
+                # add c into language if not already there (uses set so magic)
+                if c not in self.language:
+                    self.language.append(c)
+
                 s0 = self.add_state()
                 s1 = self.add_state()
 
@@ -315,13 +339,5 @@ class Compiler():
 
             pc = c  # is the previous char
 
-        # if DEBUG:
-        #     print(len(nfa_stack))
-        #     print("\nNFA GENERATED->")
-
-        #     print(nfa_stack[-1].begin)
-
-        #     print("---")
         assert len(nfa_stack) == 1
-        # print(len(nfa_stack))
         return nfa_stack[-1]
