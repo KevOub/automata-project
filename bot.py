@@ -80,7 +80,7 @@ async def about(interaction,
 
     if regex_compiled:
 
-        embed.add_field(name="Regex compiled successfully!", value=f"The regex was compiled in {(time.time() - start_time)/100}ms", inline=False)
+        embed.add_field(name="Regex compiled successfully!", value=f"The regex was compiled in {(time.time() - start_time)*100}ms", inline=False)
 
         # Process the passed string
         if regex_match.automata.match(success):
@@ -103,7 +103,7 @@ async def about(interaction,
 
     else:
         embed.add_field(name="Regex crashed",
-                        value=f"The regex {expression_formatted} crashed the program in {(time.time() - start_time)/100}ms", inline=False)
+                        value=f"The regex {expression_formatted} crashed the program in {(time.time() - start_time)*100}ms", inline=False)
         await interaction.followup.send(embed=embed)
 
 token = ""
