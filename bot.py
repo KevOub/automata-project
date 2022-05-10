@@ -1,22 +1,18 @@
-<<<<<<< HEAD
 from string import ascii_letters
-=======
->>>>>>> e7c1035ffc76f30e7c1df77a8384cdc4f4221918
 import discord
 from nfa2 import Compiler
 from regex import Regex
+from color import ColorNFA
 from discord.ext import commands
 import time
 from re import sub
 
 # from sympy import li
 
-
 class MyClient(commands.Bot):
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
-
 
 client = MyClient(command_prefix=".")
 # client=commands.Bot(command_prefix=".")
@@ -34,6 +30,8 @@ async def about(interaction,
                 success: discord.Option(str, "The string to test to see if it passes", required=True),
                 fail: discord.Option(str, "The string to test to see if it fails", required=False),
                 flatten: discord.Option(bool, "Wether to remove epsilon transitions", required=False),
+                line_color: discord.Option(str, "Choose the color of the borders (default=black)", required=False),
+                font_color: discord.Option(str, "Choose the color of the fonts (default=black)", required=False),
                 ):
 
     # Give the bot time to respond
@@ -42,7 +40,7 @@ async def about(interaction,
     # Start time for response time
     start_time = time.time()
 
-    # format expression
+    # format expression for discord embed
     expression_formatted = sub(r'([\*])', r'\\\1', expression)
 
     # Build the embed
@@ -69,12 +67,15 @@ async def about(interaction,
     fname = "pics/testing"
     path2fname = "pics/testing.gv.png"
 
+    style_to_use = ColorNFA()
     if flatten:
+        style_to_use.edge_color = "blue"
         regex_match.transition_table()
         regex_match.flatten()
-        regex_match.draw_transition_table(fname, format="png",color="blue")
+        regex_match.draw_transition_table(fname, format="png",color=style_to_use)
     else:
-        regex_match.draw_transition_table(fname, format="png")
+        style_to_use.edge_color = "black"
+        regex_match.draw_transition_table(fname, format="png",color=style_to_use)
         regex_match.transition_table()
 
     if regex_compiled:

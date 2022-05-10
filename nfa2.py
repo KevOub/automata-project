@@ -1,6 +1,7 @@
 
 from os import remove, stat
 from graphviz import Digraph
+from color import ColorNFA
 
 from ref.nfa import state
 
@@ -177,7 +178,7 @@ class Compiler():
             row += "\n"
         print(f"{header}\n{header_sep}\n{row}")
 
-    def draw_transition_table(self, fileName, format="png",color="white",font_color="black"):
+    def draw_transition_table(self, fileName, format="png",color=ColorNFA):
         # HEADER
         # header = "\t| " + "".join([f"{c}\t| " for c in self.language])
         # header_sep = "-"*len(header)*3
@@ -193,9 +194,9 @@ class Compiler():
         for k, v in self.state_table.items():
             # print(type(k) == str)
             if v.final_state:
-                dot.node(k, k, shape='doublecircle',color=color,fontcolor=font_color)
+                dot.node(k, k, shape='doublecircle',color=color.edge_color,fontcolor=color.font_color)
             else:
-                dot.node(k, k, shape='circle',color=color,fontcolor=font_color)
+                dot.node(k, k, shape='circle',color=color.edge_color,fontcolor=color.font_color)
 
         # then draw all edges
         for k, v in self.state_table.items():
@@ -207,9 +208,9 @@ class Compiler():
                     # goto next state from current state `k`
                     for ns in v.transitions[c]:
                         if c == "":
-                            dot.edge(k, ns.name, label="ε",color=color,fontcolor=font_color)
+                            dot.edge(k, ns.name, label="ε",color=color.edge_color,fontcolor=color.font_color)
                         else:
-                            dot.edge(k, ns.name, label=c,color=color,fontcolor=font_color)
+                            dot.edge(k, ns.name, label=c,color=color.edge_color,fontcolor=color.font_color)
 
         dot.render()
 
