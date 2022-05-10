@@ -1,5 +1,6 @@
 
 from os import remove, stat
+from turtle import fillcolor
 from graphviz import Digraph
 from color import ColorNFA
 
@@ -178,7 +179,7 @@ class Compiler():
             row += "\n"
         print(f"{header}\n{header_sep}\n{row}")
 
-    def draw_transition_table(self, fileName, format="png",color=ColorNFA):
+    def draw_transition_table(self, fileName, format="png",color=ColorNFA,shrekmode=False):
         # HEADER
         # header = "\t| " + "".join([f"{c}\t| " for c in self.language])
         # header_sep = "-"*len(header)*3
@@ -194,9 +195,18 @@ class Compiler():
         for k, v in self.state_table.items():
             # print(type(k) == str)
             if v.final_state:
-                dot.node(k, k, shape='doublecircle',color=color.edge_color,fontcolor=color.font_color)
+                if shrekmode:
+                    dot.node(k,k,shape='doublecircle',imagepath="..",image="../pics/shrek.svg",fontcolor="white")
+                else:
+                    dot.node(k,k,shape='doublecircle')
+                # dot.node(k, k, shape='doublecircle',color=color.edge_color,fillcolor=color.fill_color,fontcolor=color.font_color)
             else:
-                dot.node(k, k, shape='circle',color=color.edge_color,fontcolor=color.font_color)
+                if shrekmode:
+                    dot.node(k,k,shape='circle',imagepath="..",image="../pics/shrek.svg",fontcolor="white")
+                else:
+                    dot.node(k,k,shape='circle')
+                
+                # dot.node(k, k, shape='circle',color=color.edge_color,fontcolor=color.font_color)
 
         # then draw all edges
         for k, v in self.state_table.items():
@@ -208,9 +218,9 @@ class Compiler():
                     # goto next state from current state `k`
                     for ns in v.transitions[c]:
                         if c == "":
-                            dot.edge(k, ns.name, label="ε",color=color.edge_color,fontcolor=color.font_color)
+                            dot.edge(k, ns.name, label="ε")
                         else:
-                            dot.edge(k, ns.name, label=c,color=color.edge_color,fontcolor=color.font_color)
+                            dot.edge(k, ns.name, label=c)
 
         dot.render()
 

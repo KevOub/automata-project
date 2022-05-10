@@ -9,19 +9,33 @@ from re import sub
 
 # from sympy import li
 
+
 class MyClient(commands.Bot):
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
+
 client = MyClient(command_prefix=".")
 # client=commands.Bot(command_prefix=".")
 
+# @client.slash_command(name="ping", description="Ping the bot")
+# async def ping(interaction):
+#     # await interaction.response.defer()
+#     embed = discord.Embed(color=0xff9300)
+#     # embed.add(name="PONG!",value="test")
+#     embed.add_field(name="Pong!", value=f"{(client.latency*1000):9.4f}ms", inline=False)
+#     await interaction.followup.send(embed=embed)
+
+
 @client.slash_command(name="ping", description="Ping the bot")
 async def ping(interaction):
+    # await interaction.response.defer()
     embed = discord.Embed(color=0xff9300)
-    embed.add_field(name="Pong!", value=f"{(client.latency*1000):9.4f}ms", inline=False)
-    await interaction.response(embed=embed)
+    embed.add_field(
+        name="Pong!", value=f"{(client.latency*1000):9.4f}ms", inline=False)
+    await interaction.response.send_message(embed=embed)
+
 
 @client.slash_command(name="regex", description="Parse a regex")
 async def about(interaction,
@@ -31,6 +45,7 @@ async def about(interaction,
                 flatten: discord.Option(bool, "Wether to remove epsilon transitions", required=False),
                 line_color: discord.Option(str, "Choose the color of the borders (default=black)", required=False),
                 font_color: discord.Option(str, "Choose the color of the fonts (default=black)", required=False),
+                shrekmode: discord.Option(bool, "test it out please", required=False),
                 ):
 
     # Give the bot time to respond
@@ -43,17 +58,23 @@ async def about(interaction,
     expression_formatted = sub(r'([\*])', r'\\\1', expression)
 
     # Build the embed
-    embed = discord.Embed(color=0xff9300)
+    if shrekmode:
+        embed = discord.Embed(color=0x8cb04e)
+        embed.set_thumbnail(
+            url="https://cdn.discordapp.com/attachments/822176998298353684/973702897516826644/shrek.png")
+    else:
+        embed = discord.Embed(color=0xff9300)
+        embed.set_thumbnail(
+            url="https://cdn.discordapp.com/attachments/887748266761007125/971808149109633094/unknown.png")
+
     embed.set_author(name=interaction.user.name,
                      icon_url=interaction.user.display_avatar.url)
-    embed.set_thumbnail(
-        url="https://cdn.discordapp.com/attachments/887748266761007125/971808149109633094/unknown.png")
+
     # embed.add_field(name="String Fail Check", value="Success!", inline=True)
 
     # Pass the regex
     regex_compiled = False
     try:
-
         regex_to_test = Regex(expression)
         regex_match = Compiler(regex_to_test.postfix)
         regex_compiled = True
@@ -67,19 +88,25 @@ async def about(interaction,
     path2fname = "pics/testing.gv.png"
 
     style_to_use = ColorNFA()
+    style_to_use.edge_color = line_color
+    style_to_use.font_color = font_color
     if flatten:
         style_to_use.edge_color = "blue"
+        style_to_use.edge_color = line_color
         regex_match.transition_table()
         regex_match.flatten()
-        regex_match.draw_transition_table(fname, format="png",color=style_to_use)
+        regex_match.draw_transition_table(
+            fname, format="png", color=style_to_use, shrekmode=shrekmode)
     else:
-        style_to_use.edge_color = "black"
-        regex_match.draw_transition_table(fname, format="png",color=style_to_use)
+        # style_to_use.edge_color = "black"
+        regex_match.draw_transition_table(
+            fname, format="png", color=style_to_use, shrekmode=shrekmode)
         regex_match.transition_table()
 
     if regex_compiled:
 
-        embed.add_field(name="Regex compiled successfully!", value=f"The regex was compiled in {((time.time() - start_time)*100):9.4f}ms", inline=False)
+        embed.add_field(name="Regex compiled successfully!",
+                        value=f"The regex was compiled in {((time.time() - start_time)*100):9.4f}ms", inline=False)
 
         # Process the passed string
         if regex_match.automata.match(success):

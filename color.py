@@ -5,3 +5,4 @@ class ColorNFA():
         self.bg = bg
         self.edge_color = edge_color
         self.font_color = font_color
+        # self.fill_color = 
