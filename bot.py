@@ -10,6 +10,7 @@ from regex import Regex
 from discord.ext import commands
 import random
 import time
+from re import sub
 
 # from sympy import li
 
@@ -81,16 +82,16 @@ async def about(interaction,
         # Process the passed string
         if regex_match.automata.match(success):
             embed.add_field(name="String Pass Check Success",
-                            value=f"The regex {expression} passed the test {success}", inline=False)
+                            value=f"The regex {sub(r'([\*])', r'\\\1', expression)} passed the test {success}", inline=False)
         else:
             embed.add_field(name="String Pass Check Failed!",
-                            value=f"The regex {expression} passed the test {success}", inline=False)
+                            value=f"The regex {sub(r'([\*])', r'\\\1', expression)} passed the test {success}", inline=False)
 
         # If there is a fail string, process it
         if fail != None:
             if not regex_match.automata.match(fail):
                 embed.add_field(name="String Reject Check Success",
-                                value=f"The regex {expression} passed the test of rejecting {fail}", inline=False)
+                                value=f"The regex {sub(r'([\*])', r'\\\1', expression)} passed the test of rejecting {fail}", inline=False)
 
         file2disc = discord.File(path2fname)
         embed.set_image(url=f"attachment://{path2fname}")
@@ -99,7 +100,7 @@ async def about(interaction,
 
     else:
         embed.add_field(name="Regex crashed",
-                        value=f"The regex {expression} crashed the program in {(time.time() - start_time)/100}ms", inline=False)
+                        value=f"The regex {sub(r'([\*])', r'\\\1', expression)} crashed the program in {(time.time() - start_time)/100}ms", inline=False)
         await interaction.followup.send(embed=embed)
 
 token = ""
