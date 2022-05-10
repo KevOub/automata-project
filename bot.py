@@ -19,10 +19,9 @@ client = MyClient(command_prefix=".")
 
 @client.slash_command(name="ping", description="Ping the bot")
 async def ping(interaction):
-    await interaction.response.defer()
     embed = discord.Embed(color=0xff9300)
-    embed.add_field(name="Pong!", value=f"{client.latency*1000}ms", inline=False)
-    await interaction.followup.send(embed=embed)
+    embed.add_field(name="Pong!", value=f"{(client.latency*1000):9.4f}ms", inline=False)
+    await interaction.response(embed=embed)
 
 @client.slash_command(name="regex", description="Parse a regex")
 async def about(interaction,
@@ -80,7 +79,7 @@ async def about(interaction,
 
     if regex_compiled:
 
-        embed.add_field(name="Regex compiled successfully!", value=f"The regex was compiled in {(time.time() - start_time)*100}ms", inline=False)
+        embed.add_field(name="Regex compiled successfully!", value=f"The regex was compiled in {((time.time() - start_time)*100):9.4f}ms", inline=False)
 
         # Process the passed string
         if regex_match.automata.match(success):
@@ -88,7 +87,7 @@ async def about(interaction,
                             value=f"The regex {expression_formatted} passed the test {success}", inline=False)
         else:
             embed.add_field(name="String Pass Check Failed!",
-                            value=f"The regex {expression_formatted} passed the test {success}", inline=False)
+                            value=f"The regex {expression_formatted} failed the test {success}", inline=False)
 
         # If there is a fail string, process it
         if fail != None:
@@ -103,7 +102,7 @@ async def about(interaction,
 
     else:
         embed.add_field(name="Regex crashed",
-                        value=f"The regex {expression_formatted} crashed the program in {(time.time() - start_time)*100}ms", inline=False)
+                        value=f"The regex {expression_formatted} crashed the program in {((time.time() - start_time)*100):9.4f}ms", inline=False)
         await interaction.followup.send(embed=embed)
 
 token = ""
