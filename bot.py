@@ -1,14 +1,7 @@
-from string import ascii_letters
-import tempfile
 import discord
-from itsdangerous import exc
-import requests
-import io
-import os
 from nfa2 import Compiler
 from regex import Regex
 from discord.ext import commands
-import random
 
 # from sympy import li
 
@@ -26,7 +19,7 @@ client = MyClient(command_prefix=".")
 async def ping(interaction):
     await interaction.response.defer()
     embed = discord.Embed(color=0xff9300)
-    embed.add_field(name="Regex crashed", value=f"Pong! {client.latency*1000}ms", inline=False)
+    embed.add_field(name="Pong!", value=f"{client.latency*1000}ms", inline=False)
     await interaction.followup.send(embed=embed)
 
 @client.slash_command(name="regex", description="Parse a regex", guild_ids=[971807147627282482])
@@ -99,15 +92,6 @@ async def about(interaction,
         await interaction.followup.send(embed=embed)
 
 token = ""
-
-# try:
-#     with open("secret.key","wb") as s:
-#         token = s.read()
-#         print(token)
-#         client.run(token)
-# except:
-#     print("Psst... put the discord token into the secret.key file")
-
 
 with open("bot/secret.key", "rb") as s:
     token = s.read()
