@@ -1,7 +1,15 @@
+from string import ascii_letters
+import tempfile
 import discord
+from itsdangerous import exc
+import requests
+import io
+import os
 from nfa2 import Compiler
 from regex import Regex
 from discord.ext import commands
+import random
+import time
 
 # from sympy import li
 
@@ -15,14 +23,14 @@ class MyClient(commands.Bot):
 client = MyClient(command_prefix=".")
 # client=commands.Bot(command_prefix=".")
 
-@client.slash_command(name="ping", description="Ping the bot", guild_ids=[971807147627282482])
+@client.slash_command(name="ping", description="Ping the bot")
 async def ping(interaction):
     await interaction.response.defer()
     embed = discord.Embed(color=0xff9300)
     embed.add_field(name="Pong!", value=f"{client.latency*1000}ms", inline=False)
     await interaction.followup.send(embed=embed)
 
-@client.slash_command(name="regex", description="Parse a regex", guild_ids=[971807147627282482])
+@client.slash_command(name="regex", description="Parse a regex")
 async def about(interaction,
                 expression: discord.Option(str, "The expression to parse", required=True),
                 success: discord.Option(str, "The string to test to see if it passes", required=True),
@@ -32,6 +40,9 @@ async def about(interaction,
 
     # Give the bot time to respond
     await interaction.response.defer()
+
+    # Start time for response time
+    start_time = time.time()
 
     # Build the embed
     embed = discord.Embed(color=0xff9300)
@@ -65,7 +76,7 @@ async def about(interaction,
 
     if regex_compiled:
 
-        embed.add_field(name="Regex compiled successfully!", value=f"The regex was compiled in {client.latency*1000}ms", inline=False)
+        embed.add_field(name="Regex compiled successfully!", value=f"The regex was compiled in {time.time() - start_time}s", inline=False)
 
         # Process the passed string
         if regex_match.automata.match(success):
@@ -88,10 +99,19 @@ async def about(interaction,
 
     else:
         embed.add_field(name="Regex crashed",
-                        value=f"The regex {expression} crashed the program in {client.latency*1000}ms", inline=False)
+                        value=f"The regex {expression} crashed the program in {time.time() - start_time}s", inline=False)
         await interaction.followup.send(embed=embed)
 
 token = ""
+
+# try:
+#     with open("secret.key","wb") as s:
+#         token = s.read()
+#         print(token)
+#         client.run(token)
+# except:
+#     print("Psst... put the discord token into the secret.key file")
+
 
 with open("bot/secret.key", "rb") as s:
     token = s.read()
