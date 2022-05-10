@@ -1,9 +1,0 @@
-digraph "test2.png" {
-	graph [rankdir=LR]
-	q3 [label=q3 shape=circle]
-	q5 [label=q5 shape=doublecircle]
-	q6 [label=q6 shape=doublecircle]
-	q3 -> q5 [label=b]
-	q5 -> q3 [label=a]
-	q6 -> q3 [label=a]
-}
