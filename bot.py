@@ -1,14 +1,7 @@
-from string import ascii_letters
-import tempfile
 import discord
-from itsdangerous import exc
-import requests
-import io
-import os
 from nfa2 import Compiler
 from regex import Regex
 from discord.ext import commands
-import random
 import time
 from re import sub
 
