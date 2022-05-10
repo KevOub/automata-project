@@ -1,6 +1,5 @@
 
 from os import remove, stat
-from turtle import fillcolor
 from graphviz import Digraph
 from color import ColorNFA
 
