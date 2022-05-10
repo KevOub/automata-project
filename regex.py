@@ -15,7 +15,7 @@ class Regex():
         return stack[-1] if stack else None
 
     def calc_prec(self, a, b):
-        precedence = {"*": 2, "?": 1, "+": 0}
+        precedence = {"*": 2, "?": 0, "+": 1}
         if a in precedence and b in precedence:
             return precedence[a] >= precedence[b]
 

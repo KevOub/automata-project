@@ -42,6 +42,9 @@ async def about(interaction,
         url="https://cdn.discordapp.com/attachments/887748266761007125/971808149109633094/unknown.png")
     # embed.add_field(name="String Fail Check", value="Success!", inline=True)
 
+    fname = "pics/testing"
+    path2fname = "pics/testing.gv.png"
+
     # Pass the regex
     regex_compiled = False
     try:
@@ -49,20 +52,19 @@ async def about(interaction,
         regex_to_test = Regex(expression)
         regex_match = Compiler(regex_to_test.postfix)
         regex_compiled = True
+        if flatten:
+            regex_match.transition_table()
+            regex_match.flatten()
+        regex_match.draw_transition_table(fname, format="png")
+        regex_match.transition_table()
     except:
         regex_compiled = False
 
     # fname = "".join([c for c in random.shuffle(ascii_letters)])
     # temp_regex_pic = tempfile.NamedTemporaryFile(suffix='.png')
 
-    fname = "pics/testing"
-    path2fname = "pics/testing.gv.png"
 
-    if flatten:
-        regex_match.transition_table()
-        regex_match.flatten()
-    regex_match.draw_transition_table(fname, format="png")
-    regex_match.transition_table()
+ 
 
     if regex_compiled:
 

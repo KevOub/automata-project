@@ -239,6 +239,31 @@ class Compiler():
                     #
                     # goto next state from current state `k`
                     # for ns in v.transitions[c]:
+        
+        current_states = set()
+        for k,v in self.state_table.items():
+            finished = False
+            current_states.add(v) 
+            while not finished:
+                old_set = current_states
+                next_states = set()
+                for s in current_states:
+                    # add lambda transitions
+                    if any([k == "" for k in s.transitions.keys()]):
+                        # go through the lambda transitions
+                        for es in s.transitions[""]:
+                            # and add it to the next up
+                            next_states.add(es)
+                    # or check if s is a final state and return
+                    if s.final_state:
+                        if all([(l == "") for l in s.transitions.keys()]) or len(s.transitions.keys()) == 0:
+                            v.final_state = True
+
+                current_states = next_states
+                if current_states == old_set:
+                    finished = True
+
+        
 
         removed = []
         for d in to_delete:
