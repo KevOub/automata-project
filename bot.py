@@ -83,7 +83,7 @@ async def about(interaction,
                             value=f"The regex {expression_formatted} passed the test {success}", inline=False)
         else:
             embed.add_field(name="String Pass Check Failed!",
-                            value=f"The regex {expression_formatted} passed the test {success}", inline=False)
+                            value=f"The regex {expression_formatted} failed the test {success}", inline=False)
 
         # If there is a fail string, process it
         if fail != None:
