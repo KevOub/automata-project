@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 from string import ascii_letters
+=======
+>>>>>>> e7c1035ffc76f30e7c1df77a8384cdc4f4221918
 import discord
 from nfa2 import Compiler
 from regex import Regex
