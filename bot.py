@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 from string import ascii_letters
-=======
->>>>>>> e7c1035ffc76f30e7c1df77a8384cdc4f4221918
 import discord
 from nfa2 import Compiler
 from regex import Regex
@@ -23,10 +20,9 @@ client = MyClient(command_prefix=".")
 
 @client.slash_command(name="ping", description="Ping the bot")
 async def ping(interaction):
-    await interaction.response.defer()
     embed = discord.Embed(color=0xff9300)
     embed.add_field(name="Pong!", value=f"{client.latency*1000}ms", inline=False)
-    await interaction.followup.send(embed=embed)
+    await interaction.response(embed=embed)
 
 @client.slash_command(name="regex", description="Parse a regex")
 async def about(interaction,
