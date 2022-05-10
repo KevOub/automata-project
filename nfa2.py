@@ -1,5 +1,5 @@
 
-from os import stat
+from os import remove, stat
 from graphviz import Digraph
 
 from ref.nfa import state
@@ -46,6 +46,38 @@ class NFA():
         self.end = end
         end.final_state = True
 
+    def epsilon_resolve(self, state, c):
+        if "" not in state.transitions:
+            return []
+        estates = set([e for e in state.transitions[""]])
+        finished = False
+        counter = 0
+        resolve_to = []
+
+        while not finished:
+            counter += 1
+            # capture what the epsilon states were previously
+            old_set = estates
+            next_estates = set()
+
+            # go through all lambda transitions
+            for estate in estates:
+                # if the character we want add it to the transition table
+                if c in estate.transitions.keys():
+                    for ts in estate.transitions[c]:
+                        resolve_to.append(ts)
+                # otherwise add to the estate list for next iteration
+                if any([k == "" for k in estate.transitions.keys()]):
+                    for es in estate.transitions[""]:
+                        next_estates.add(es)
+
+            # check if the sets have changed
+            estates = next_estates
+            if estates == old_set:
+                finished = True
+
+        return resolve_to
+
     def match(self, msg):
         current_states = set()
         # add the head of the NFA
@@ -71,38 +103,9 @@ class NFA():
 
                 # handle epsilon transitions
                 if any([k == "" for k in state.transitions.keys()]):
-                    # epsilon_states = state.transitions[""]
 
-                    trans_state = []
-                    finished = False
-
-                    # TODO check if this is redundant
-                    estates = set([e for e in state.transitions[""]])
-                    counter = 0
-                    while not finished:
-                        counter += 1
-                        # capture what the epsilon states were previously
-                        old_set = estates
-                        next_estates = set()
-
-                        # go through all lambda transitions
-                        for estate in estates:
-                            # if the character we want add it to the transition table
-                            if c in estate.transitions.keys():
-                                for ts in estate.transitions[c]:
-                                    trans_state.append(ts)
-                            # otherwise add to the estate list for next iteration
-                            if any([k == "" for k in estate.transitions.keys()]):
-                                for es in estate.transitions[""]:
-                                    next_estates.add(es)
-
-                        # check if the sets have changed
-                        estates = next_estates
-                        if estates == old_set:
-                            break
-
-                    # add the states found from the lambda transitions to next state
-                    for ts in trans_state:
+                    # magic code to resolve epsilons (which are removed after construction)
+                    for ts in self.epsilon_resolve(state, c):
                         next_states.add(ts)
 
             current_states = next_states
@@ -152,26 +155,6 @@ class Compiler():
 
         return newState
 
-    # def transition_table(self):
-    #     # output = self.automata.begin.name
-    #     output = ""
-    #     # states = self.compile()
-    #     # output = states.begin.name
-    #     current_states = {self.automata.begin.name :  self.automata.begin.transitions.items()}
-
-    #     for name, states in current_states.items():
-    #         next_state = set()
-    #         output += f"{name} : "
-    #         for state in states:
-    #             transition_to = "".join([str(s) for s in state[1]])
-    #             # print(transition_to)
-    #             output += f" '{state[0]}->{transition_to}'"
-    #             for ts in state[1]:
-    #                 next_state.add(ts)
-    #         current_states = next_state
-
-    #     print(output)
-
     def transition_table(self):
         # HEADER
         header = "\t| " + "".join([f"{c}\t| " for c in self.language])
@@ -194,16 +177,16 @@ class Compiler():
             row += "\n"
         print(f"{header}\n{header_sep}\n{row}")
 
-    def draw_transition_table(self, fileName):
+    def draw_transition_table(self, fileName, format="png"):
         # HEADER
         # header = "\t| " + "".join([f"{c}\t| " for c in self.language])
         # header_sep = "-"*len(header)*3
         # row = ""
         # go through the list of states
-        dot = Digraph(name=fileName, format='svg')
+        dot = Digraph(name=fileName, format=format, )
         dot.graph_attr['rankdir'] = 'LR'
         # dot.node("", "", shape='plaintext')
-        # dot.attr = 
+        # dot.attr =
 
         # first draw each state
         for k, v in self.state_table.items():
@@ -228,6 +211,44 @@ class Compiler():
                             dot.edge(k, ns.name, label=c)
 
         dot.render()
+
+    def flatten(self):
+        # go through table
+        to_delete = []
+
+        for k, v in self.state_table.items():
+            # iterate over language
+            for c in self.language:
+                # if there exists `c` in the transition table of the state
+                if "" in v.transitions:
+                    for estate in self.automata.epsilon_resolve(v, c):
+                        # if estate.final_state:
+                            # v.final_state = True
+                        if v.final_state:
+                            estate.final_state = True
+                        
+                        if c in v.transitions:
+                            if estate not in v.transitions[c]:
+                                v.add_transition(c, estate)
+                        else:
+                            v.add_transition(c, estate)
+
+
+                        to_delete.append(v)
+
+                    #
+                    # goto next state from current state `k`
+                    # for ns in v.transitions[c]:
+
+        removed = []
+        for d in to_delete:
+            if "" in d.transitions:
+
+                for state in d.transitions[""]:
+                    if state.name not in removed:
+                        self.state_table.pop(state.name)
+                        removed.append(state.name)
+                d.transitions[""] = []
 
     def compile(self, DEBUG=True) -> NFA:
 

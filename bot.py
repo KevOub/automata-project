@@ -27,7 +27,9 @@ client = MyClient(command_prefix=".")
 async def about(interaction,
                 expression: discord.Option(str, "The expression to parse", required=True),
                 success: discord.Option(str, "The string to test to see if it passes", required=True),
-                fail: discord.Option(str, "The string to test to see if it fails", required=False)):
+                fail: discord.Option(str, "The string to test to see if it fails", required=False),
+                flatten: discord.Option(bool, "Wether to remove epsilon transitions", required=False),
+                ):
 
     # Give the bot time to respond
     await interaction.response.defer()
@@ -41,37 +43,52 @@ async def about(interaction,
     # embed.add_field(name="String Fail Check", value="Success!", inline=True)
 
     # Pass the regex
-    regex_to_test = Regex(expression)
+    regex_compiled = False
+    try:
 
-    regex_match = Compiler(regex_to_test.postfix)
+        regex_to_test = Regex(expression)
+        regex_match = Compiler(regex_to_test.postfix)
+        regex_compiled = True
+    except:
+        regex_compiled = False
 
     # fname = "".join([c for c in random.shuffle(ascii_letters)])
     # temp_regex_pic = tempfile.NamedTemporaryFile(suffix='.png')
+
     fname = "pics/testing"
-    path2fname = "pics/testing.gv.svg"
-    regex_match.draw_transition_table(fname)
-    
-    
+    path2fname = "pics/testing.gv.png"
 
-    # Process the passed string
-    if regex_match.automata.match(success):
-        embed.add_field(name="String Pass Check Success",
-                        value=f"The regex {expression} passed the test {success}", inline=False)
+    if flatten:
+        regex_match.transition_table()
+        regex_match.flatten()
+    regex_match.draw_transition_table(fname, format="png")
+    regex_match.transition_table()
+
+    if regex_compiled:
+
+        # Process the passed string
+        if regex_match.automata.match(success):
+            embed.add_field(name="String Pass Check Success",
+                            value=f"The regex {expression} passed the test {success}", inline=False)
+        else:
+            embed.add_field(name="String Pass Check Failed!",
+                            value=f"The regex {expression} passed the test {success}", inline=False)
+
+        # If there is a fail string, process it
+        if fail != None:
+            if not regex_match.automata.match(fail):
+                embed.add_field(name="String Reject Check Success",
+                                value=f"The regex {expression} passed the test of rejcting {success}", inline=False)
+
+        file2disc = discord.File(path2fname)
+        embed.set_image(url=f"attachment://{path2fname}")
+
+        await interaction.followup.send(embed=embed, file=file2disc)
+
     else:
-        embed.add_field(name="String Pass Check Failed!",
-                        value=f"The regex {expression} passed the test {success}", inline=False)
-
-    # If there is a fail string, process it
-    if fail != None:
-        if not regex_match.automata.match(fail):
-            embed.add_field(name="String Reject Check Success",
-                            value=f"The regex {expression} passed the test of rejcting {success}", inline=False)
-
-    file2disc = discord.File(path2fname)
-    embed.set_image(url=f"attachment://{path2fname}")
-    
-    await interaction.followup.send(embed=embed,file=file2disc)
-
+        embed.add_field(name="Regex crashed",
+                        value=f"The regex {expression} crashed the program", inline=False)
+        await interaction.followup.send(embed=embed)
 
 token = ""
 
