@@ -177,14 +177,15 @@ class Compiler():
             row += "\n"
         print(f"{header}\n{header_sep}\n{row}")
 
-    def draw_transition_table(self, fileName, format="png"):
+    def draw_transition_table(self, fileName, format="png",color="white",font_color="black"):
         # HEADER
         # header = "\t| " + "".join([f"{c}\t| " for c in self.language])
         # header_sep = "-"*len(header)*3
         # row = ""
         # go through the list of states
-        dot = Digraph(name=fileName, format=format, )
+        dot = Digraph(name=fileName, format=format )
         dot.graph_attr['rankdir'] = 'LR'
+
         # dot.node("", "", shape='plaintext')
         # dot.attr =
 
@@ -192,9 +193,9 @@ class Compiler():
         for k, v in self.state_table.items():
             # print(type(k) == str)
             if v.final_state:
-                dot.node(k, k, shape='doublecircle')
+                dot.node(k, k, shape='doublecircle',color=color,fontcolor=font_color)
             else:
-                dot.node(k, k, shape='circle')
+                dot.node(k, k, shape='circle',color=color,fontcolor=font_color)
 
         # then draw all edges
         for k, v in self.state_table.items():
@@ -206,9 +207,9 @@ class Compiler():
                     # goto next state from current state `k`
                     for ns in v.transitions[c]:
                         if c == "":
-                            dot.edge(k, ns.name, label="ε")
+                            dot.edge(k, ns.name, label="ε",color=color,fontcolor=font_color)
                         else:
-                            dot.edge(k, ns.name, label=c)
+                            dot.edge(k, ns.name, label=c,color=color,fontcolor=font_color)
 
         dot.render()
 

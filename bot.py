@@ -1,14 +1,8 @@
 from string import ascii_letters
-import tempfile
 import discord
-from itsdangerous import exc
-import requests
-import io
-import os
 from nfa2 import Compiler
 from regex import Regex
 from discord.ext import commands
-import random
 import time
 from re import sub
 
@@ -75,8 +69,10 @@ async def about(interaction,
     if flatten:
         regex_match.transition_table()
         regex_match.flatten()
-    regex_match.draw_transition_table(fname, format="png")
-    regex_match.transition_table()
+        regex_match.draw_transition_table(fname, format="png",color="blue")
+    else:
+        regex_match.draw_transition_table(fname, format="png")
+        regex_match.transition_table()
 
     if regex_compiled:
 
@@ -119,5 +115,4 @@ token = ""
 
 with open("bot/secret.key", "rb") as s:
     token = s.read()
-    print(token)
     client.run(token.decode())
