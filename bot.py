@@ -57,7 +57,8 @@ async def about(interaction,
             regex_match.flatten()
         regex_match.draw_transition_table(fname, format="png")
         regex_match.transition_table()
-    except:
+    except Exception as e :
+        print(e)
         regex_compiled = False
 
     # fname = "".join([c for c in random.shuffle(ascii_letters)])

@@ -18,9 +18,9 @@ class State():
     def add_transition(self, c, state):
         # adds the transition to the array of possible transitions
         if c in self.transitions:
-            self.transitions[c].append(state)
+            self.transitions[c].add(state)
         else:
-            self.transitions.setdefault(c, []).append(state)
+            self.transitions.setdefault(c, set()).add(state)
             # self.transitions.update({c: []})
             # self.transitions[c].append(state)
 
@@ -311,7 +311,7 @@ class Compiler():
                 nfa_stack.append(newNFA)
 
             # concat
-            elif c == "?":
+            elif c == "?" or c == "\x08":
                 """
                 n2 = nfa_stack.pop()
                 n1 = nfa_stack.pop()

@@ -9,7 +9,7 @@ from regex import Regex
 # re = "a?b?c?d?e?f*?g"
 # re = "a?((b*?a))"
 # ma = "aba"
-re = "(f?(u*)?c?k)"
+re = "ab*"
 ma = "ab"
 
 regex_to_test = Regex(re)

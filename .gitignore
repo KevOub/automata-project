@@ -1,2 +1,7 @@
 secret.key
 pics/*
+test.png.gv
+test.png.gv.png
+test2.png.gv
+test2.png.gv.png
+__pycache__/*

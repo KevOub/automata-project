@@ -41,10 +41,16 @@ class Regex():
         operand_stack = []  # stack
         operators = ["*", "+", "|", "?"]
         ploop = False
-
+        count = 0
         for c in self.expr:
             if c in self.lang:
                 output += c
+                # if count > 0:
+                    # count = 0 
+                    # output += chr(0x08)
+                # else:
+                    # count += 1
+
             elif c == "(":
                 operand_stack.append(c)
             elif c == ")":
