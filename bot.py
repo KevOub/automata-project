@@ -131,8 +131,8 @@ async def about(interaction,
 
     if shrekmode:
         img = Image.open(path2fname)
-        img.convert('RGB')
-        img.save(path2fnamej, 'JPEG', quality=1)
+        imgc = img.convert('RGB')
+        imgc.save(path2fnamej, 'JPEG', quality=1)
         file2disc = discord.File(path2fnamej)
         embed.set_image(url=f"attachment://{path2fnamej}")
         await interaction.followup.send(embed=embed, file=file2discj)
