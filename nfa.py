@@ -151,6 +151,7 @@ class Compiler():
         self.final_states = []
         self.delta = {}  # transition table
         self.automata = self.compile()
+        self.vulnerable_states = []
 
     def reachable(self,to,fro):
         current_states = set()
@@ -210,7 +211,7 @@ class Compiler():
                                 # loopbacked.add(v)
                                 loopbacked.update({v:c})                            
 
-        
+        vuln = False
         for t,tv in loopbacked.items():
             for f,fv in loopbacked.items():
                 if f != t:
@@ -218,9 +219,12 @@ class Compiler():
                     r = self.reachable(t,f)
                     if r:
                         vulnerable_string = f"{f.name}*...{t.name}*"
+                        if t not in self.vulnerable_states:
+                            self.vulnerable_states.append(t)
                         print(vulnerable_string)
-                        return True
-        return False
+                        vuln = True
+                        # return True
+        return vuln
 
     def add_state(self) -> State:
         self.states += 1

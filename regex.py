@@ -1,4 +1,4 @@
-from string import ascii_lowercase, ascii_uppercase
+from string import ascii_lowercase, ascii_uppercase, printable
 # https://github.com/kevinniland/Thompsons-Construction-on-NFAs/blob/master/thompsons.py
 
 
@@ -15,7 +15,7 @@ class Regex():
         return stack[-1] if stack else None
 
     def calc_prec(self, a, b):
-        precedence = {"*": 3, "?": 1, "|": 1,".":2, "+": 1}
+        precedence = {"*": 3, "?": 1, "|": 1, ".": 2, "+": 1}
         if a in precedence and b in precedence:
             return precedence[a] >= precedence[b]
 
@@ -39,13 +39,12 @@ class Regex():
 
         output = ""  # "print" to
         operand_stack = []  # stack
-        operators = ["*", "+", "|", ":"]
+        operators = ["*", "+", "|", ":", "*", ".", "?"]
         ploop = False
         count = 0
         for c in self.expr:
             if c in self.lang:
                 output += c
-
 
             elif c == "(":
                 operand_stack.append(c)

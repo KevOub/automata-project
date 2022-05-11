@@ -1,8 +1,4 @@
 import unittest
-import re
-import time
-import os
-import sys
 from nfa import Compiler
 from regex import Regex
 

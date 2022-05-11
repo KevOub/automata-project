@@ -10,7 +10,8 @@ from regex import Regex
 # re = "a?((b*?a))"
 # ma = "aba"
 # re = "((a*).(b*)).c"
-re = "((a*).(b*)).c"
+#re = "((a*).d.(b*).c)"
+# re = "(((a*).(c|p|(r)*).(b*).(k).(f|g).(c))|u|q)"
 # re = "a.b"
 ma = "a"
 
