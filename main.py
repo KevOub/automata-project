@@ -13,6 +13,8 @@ from regex import Regex
 #re = "((a*).d.(b*).c)"
 # re = "(((a*).(c|p|(r)*).(b*).(k).(f|g).(c))|u|q)"
 # re = "a.b"
+
+re = "((a*).d.(b*).c)"
 ma = "a"
 
 regex_to_test = Regex(re)

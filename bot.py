@@ -92,16 +92,16 @@ async def about(interaction,
     path2fname = "pics/testing.gv.png"
 
     style_to_use = ColorNFA()
-    style_to_use.edge_color = line_color
-    style_to_use.font_color = font_color
+    # style_to_use.edge_color = line_color
+    # style_to_use.font_color = font_color
     if flatten:
         style_to_use.edge_color = "blue"
-        style_to_use.edge_color = line_color
+        # style_to_use.edge_color = line_color
         regex_match.transition_table()
         regex_match.flatten()
         vulnerable_result = regex_match.vulnerable()
-        vulnerable_message = f"The regex {regex_to_test.infix} is vulnerable" if vulnerable_result else f"The regex {regex_to_test.infix} is not vulnerable"
-        embed.add_field(name="VULNERABLE", value=vulnerable_message,inline=False)
+        vulnerable_message = f"The regex {expression_formatted} is vulnerable" if vulnerable_result else f"The regex {expression_formatted} is **not** vulnerable"
+        embed.add_field(name="VULNERABLITY CHECK", value=vulnerable_message,inline=False)
         regex_match.draw_transition_table(
             fname, format="png", color=style_to_use, shrekmode=shrekmode)
     else:
@@ -127,7 +127,7 @@ async def about(interaction,
     if fail != None:
         if not regex_match.automata.match(fail):
             embed.add_field(name="String Reject Check Success",
-                            value="The regex {expression_formatted} passed the test of rejecting {fail}", inline=False)
+                            value=f"The regex {expression_formatted} passed the test of rejecting {fail}", inline=False)
 
     file2disc = discord.File(path2fname)
     embed.set_image(url=f"attachment://{path2fname}")
