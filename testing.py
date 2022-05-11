@@ -3,7 +3,7 @@ import re
 import time
 import os
 import sys
-from nfa2 import Compiler
+from nfa import Compiler
 from regex import Regex
 
 

@@ -1,18 +1,18 @@
 ((((((((((a))))))))))   a
-(a?b)   ab  a
-(a*)?b  aaaaaaaaab   
-(a*)?b  ab   
-(a?b?(a*)?b) abaaaaaab
-(f?(u*)?c?k) fuuuuuuck
-((d*)?((i))?c) ddddddic
-(a?b?(a*)?b)    abb abaaaaaabab
-(f?(u*)?c?k) fck
-((d*)?((i))?c)  dic ddddddiiiic
-(a+b) b
-a+b a
-((a?b)+a)   ab
-(f?(u*)?c?k) fck
-(a+b)*        aabbaabbaba
-(a)* + b?a + (b)*   aaaaaababbbbb
-(a?b)* + (b?a)* + (a)*    abababababbabababaaaaaa
+(a.b)   ab  a
+(a*).b  aaaaaaaaab   
+(a*).b  ab   
+(a.b.(a*).b) abaaaaaab
+(f.(u*).c.k) fuuuuuuck
+((d*).((i)).c) ddddddic
+(a.b.(a*).b)    abb abaaaaaabab
+(f.(u*).c.k) fck
+((d*).((i)).c)  dic ddddddiiiic
+(a|b) b
+a|b a
+((a.b)|a)   ab
+(f.(u*).c.k) fck
+(a|b)*        aabbaabbaba
+(a)* | b.a | (b)*   aaaaaababbbbb
+(a.b)* | (b.a)* | (a)*    abababababbabababaaaaaa
 

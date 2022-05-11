@@ -1,5 +1,9 @@
 
+from asyncore import loop
+from hashlib import new
 from os import remove, stat
+from tabnanny import check
+from tkinter.messagebox import NO
 from graphviz import Digraph
 from color import ColorNFA
 
@@ -19,9 +23,9 @@ class State():
     def add_transition(self, c, state):
         # adds the transition to the array of possible transitions
         if c in self.transitions:
-            self.transitions[c].add(state)
+            self.transitions[c].append(state)
         else:
-            self.transitions.setdefault(c, set()).add(state)
+            self.transitions.setdefault(c, list()).append(state)
             # self.transitions.update({c: []})
             # self.transitions[c].append(state)
 
@@ -147,6 +151,76 @@ class Compiler():
         self.final_states = []
         self.delta = {}  # transition table
         self.automata = self.compile()
+
+    def reachable(self,to,fro):
+        current_states = set()
+        current_states.add(fro)
+        old_states = current_states
+        output_string = ""
+        while True:
+            next_state = set()
+            transition_states = set()
+            for c in self.language:
+                for ns in current_states:    
+                    # first check if transition is defined
+                    if c in ns.transitions.keys():
+                        
+                        for ts in ns.transitions[c]:
+                            transition_states.add(ts)
+                            output_string += c
+                    
+                    # or if there is an epsilon reachable
+                    for es in self.automata.epsilon_resolve(ns,c):
+                        transition_states.add(es)
+            
+            # finally, addit the next state
+            current_states = transition_states
+
+            if any([s == to for s in current_states]):
+                print(f"TEST OUTPUT PATH {output_string}")
+                return True
+
+            if old_states == next_state:
+                return False
+            else:
+                old_states = next_state
+
+
+                    
+    
+
+    def vulnerable(self):
+        
+        vulnerable = False
+        loopbacked = {}
+        # first, determine the ones with a loopback
+        for k, v in self.state_table.items():
+            # go through each character in language
+            for c in self.language:
+                # first check if transition is defined
+                if c in v.transitions.keys():
+                    # if loops back to self
+                    if v in v.transitions[c]:
+                        # OVERWRITE ANY OTHER LOOP BACKS LOL
+                        loopbacked.update({v:c})                            
+
+                    else:
+                        for es in  self.automata.epsilon_resolve(v,c):
+                            if v == es:
+                                # loopbacked.add(v)
+                                loopbacked.update({v:c})                            
+
+        
+        for t,tv in loopbacked.items():
+            for f,fv in loopbacked.items():
+                if f != t:
+                        
+                    r = self.reachable(t,f)
+                    if r:
+                        vulnerable_string = f"{f.name}*...{t.name}*"
+                        print(vulnerable_string)
+                        return True
+        return False
 
     def add_state(self) -> State:
         self.states += 1
@@ -291,23 +365,12 @@ class Compiler():
         nfa_stack = []
 
         # go through character by character
+        semi_match = False
+        dangling_chars = []
         for c in self.regex:
 
             # kleene
             if c == "*":
-                """
-                n1 = nfa_stack.pop()
-                s0 = self.create_state()
-                s1 = self.create_state()
-                s0.epsilon = [n1.start]
-                if t.name == 'STAR':
-                    s0.epsilon.append(s1)
-                n1.end.epsilon.extend([s1, n1.start])
-                n1.end.is_end = False
-                nfa = NFA(s0, s1)
-                nfa_stack.append(nfa)
-                """
-
                 nfa1 = nfa_stack.pop()
                 s0 = self.add_state()
                 s1 = self.add_state()
@@ -321,16 +384,8 @@ class Compiler():
                 newNFA = NFA(s0, s1)
                 nfa_stack.append(newNFA)
 
-            # concat
-            elif c == "?" or c == "\x08":
-                """
-                n2 = nfa_stack.pop()
-                n1 = nfa_stack.pop()
-                n1.end.is_end = False
-                n1.end.epsilon.append(n2.start)
-                nfa = NFA(n1.start, n2.end)
-                nfa_stack.append(nfa)
-                """
+            # add two chars
+            elif c == ".":
                 # pop
                 nfa2 = nfa_stack.pop()
                 nfa1 = nfa_stack.pop()
@@ -341,47 +396,50 @@ class Compiler():
                 newNFA = NFA(nfa1.begin, nfa2.end)
                 nfa_stack.append(newNFA)
 
-            # union
-            elif c == "+":
-                """
-                n2 = nfa_stack.pop()
-                n1 = nfa_stack.pop()
-                s0 = self.create_state()
-                s0.epsilon = [n1.start, n2.start]
-                s3 = self.create_state()
-                n1.end.epsilon.append(s3)
-                n2.end.epsilon.append(s3)
-                n1.end.is_end = False
-                n2.end.is_end = False
-                nfa = NFA(s0, s3)
-                nfa_stack.append(nfa)
-                """
-
+            # OR
+            elif c == "|":
                 nfa2 = nfa_stack.pop()
                 nfa1 = nfa_stack.pop()
-                s0 = self.add_state()
-                s0.add_transition("", nfa1.begin)
-                s0.add_transition("", nfa2.begin)
+                s0  = self.add_state()
                 s1 = self.add_state()
-                nfa2.end.add_transition("", s1)
-                nfa1.end.add_transition("", s1)
+                s0.add_transition("",nfa1.begin)
+                s0.add_transition("",nfa2.begin)
+                nfa2.end.add_transition("",s1)
+                nfa1.end.add_transition("",s1)
+                
                 nfa1.end.final_state = False
                 nfa2.end.final_state = False
-                # s1.final_state = True
-                newNFA = NFA(s0, s1)
+                newNFA = NFA(s0,s1)
                 nfa_stack.append(newNFA)
 
-            # elif c == "\0x08":
-            #     s0 = self.add_state()
-            #     s1 = self.add_state()
 
-            #     s0.add_transition(c, s1)
-            #     # push onto stack
-            #     newNFA = NFA(s0, s1)
-            #     nfa_stack.append(newNFA)
+            # one or more
+            elif c == "+":
+                semi_match = False
+                nfa1 =  nfa_stack.pop()
+                s1  = self.add_state()
+
+                nfa1.end.add_transition("",s1)
+                nfa1.end.final_state = False
+                s1.add_transition(pc,nfa1.end)
+                newNFA = NFA(nfa1.begin,s1)
+                nfa_stack.append(newNFA)
+
+            elif c == "?":
+                nfa1 = nfa_stack.pop()
+                s0 = self.add_state()
+                s1 = self.add_state()
+                
+                s0.add_transition("",s1)
+                s0.add_transition("",nfa1.begin)
+                nfa1.end.add_transition("",s1)
+                nfa1.end.final_state = False
+                newNFA = NFA(s0,s1)
+                nfa_stack.append(newNFA)
+
 
             else:
-
+                
                 # add c into language if not already there (uses set so magic)
                 if c not in self.language:
                     self.language.append(c)
@@ -393,8 +451,9 @@ class Compiler():
                 # push onto stack
                 newNFA = NFA(s0, s1)
                 nfa_stack.append(newNFA)
+                pc = c  # is the previous char
+                    
 
-            pc = c  # is the previous char
 
         assert len(nfa_stack) == 1
         return nfa_stack[-1]
