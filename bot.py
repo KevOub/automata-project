@@ -114,7 +114,7 @@ async def about(interaction,
 
     if shrekmode:
         img = Image.open(path2fname)
-        img.save(path2fname, 'JPEG', quality=4)
+        img.save(path2fname, 'JPEG', quality=1)
 
     embed.add_field(name="Regex compiled successfully!",
                     value=f"The regex was compiled in {((time.time() - start_time)*100):9.4f}ms", inline=False)
