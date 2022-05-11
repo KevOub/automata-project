@@ -1,9 +1,6 @@
 
-from os import remove, stat
 from graphviz import Digraph
 from color import ColorNFA
-
-from ref.nfa import state
 
 # individual states
 
@@ -45,7 +42,7 @@ class NFA():
     def __init__(self, begin, end):
         self.begin = begin
         self.end = end
-        end.final_state = True
+        self.end.final_state = True
 
     def epsilon_resolve(self, state, c):
         if "" not in state.transitions:

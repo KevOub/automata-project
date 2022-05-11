@@ -1,6 +1,6 @@
 from string import ascii_letters
 import discord
-from nfa2 import Compiler
+from nfa import Compiler
 from regex import Regex
 from color import ColorNFA
 from discord.ext import commands
