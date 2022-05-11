@@ -6,6 +6,7 @@ from color import ColorNFA
 from discord.ext import commands
 import time
 from re import sub
+from PIL import Image
 
 # from sympy import li
 
@@ -90,6 +91,7 @@ async def about(interaction,
 
     fname = "pics/testing"
     path2fname = "pics/testing.gv.png"
+        
 
     style_to_use = ColorNFA()
     # style_to_use.edge_color = line_color
@@ -110,7 +112,9 @@ async def about(interaction,
             fname, format="png", color=style_to_use, shrekmode=shrekmode)
         regex_match.transition_table()
 
-
+    if shrekmode:
+        img = Image.open(path2fname)
+        img.save(path2fname, 'JPEG', quality=4)
 
     embed.add_field(name="Regex compiled successfully!",
                     value=f"The regex was compiled in {((time.time() - start_time)*100):9.4f}ms", inline=False)
