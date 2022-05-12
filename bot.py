@@ -6,6 +6,7 @@ from color import ColorNFA
 from discord.ext import commands
 import time
 from re import sub
+from PIL import Image
 
 # from sympy import li
 
@@ -90,6 +91,7 @@ async def about(interaction,
 
     fname = "pics/testing"
     path2fname = "pics/testing.gv.png"
+    path2fnamej = "pics/testing.gv.jpg"        
 
     style_to_use = ColorNFA()
     # style_to_use.edge_color = line_color
@@ -110,8 +112,6 @@ async def about(interaction,
             fname, format="png", color=style_to_use, shrekmode=shrekmode)
         regex_match.transition_table()
 
-
-
     embed.add_field(name="Regex compiled successfully!",
                     value=f"The regex was compiled in {((time.time() - start_time)*100):9.4f}ms", inline=False)
 
@@ -129,10 +129,17 @@ async def about(interaction,
             embed.add_field(name="String Reject Check Success",
                             value=f"The regex {expression_formatted} passed the test of rejecting {fail}", inline=False)
 
-    file2disc = discord.File(path2fname)
-    embed.set_image(url=f"attachment://{path2fname}")
-
-    await interaction.followup.send(embed=embed, file=file2disc)
+    if shrekmode:
+        img = Image.open(path2fname)
+        imgc = img.convert('RGB')
+        imgc.save(path2fnamej, 'JPEG', quality=1)
+        file2disc = discord.File(path2fnamej)
+        embed.set_image(url=f"attachment://{path2fnamej}")
+        await interaction.followup.send(embed=embed, file=file2discj)
+    else:
+        file2disc = discord.File(path2fname)
+        embed.set_image(url=f"attachment://{path2fname}")
+        await interaction.followup.send(embed=embed, file=file2disc)
 
 
 token = ""
