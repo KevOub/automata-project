@@ -87,7 +87,7 @@ class NFA():
         current_states = set()
         # add the head of the NFA
         current_states.add(self.begin)
-        print(self.begin)
+        # print(self.begin)
 
         # go through each character in message
         for c in msg:
@@ -178,7 +178,7 @@ class Compiler():
             current_states = transition_states
 
             if any([s == to for s in current_states]):
-                print(f"TEST OUTPUT PATH {output_string}")
+                # print(f"TEST OUTPUT PATH {output_string}")
                 return True
 
             if old_states == next_state:
@@ -221,7 +221,7 @@ class Compiler():
                         vulnerable_string = f"{f.name}*...{t.name}*"
                         if t not in self.vulnerable_states:
                             self.vulnerable_states.append(t)
-                        print(vulnerable_string)
+                        # print(vulnerable_string)
                         vuln = True
                         # return True
         return vuln
